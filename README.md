@@ -1,103 +1,50 @@
-# SDN Learning Switch using POX & Mininet
+# CN-SDN: Traffic Classification System
 
-## 🔹 Problem Statement
+A Software Defined Networking (SDN) project that classifies network traffic using POX controller and Mininet.
 
-Implement a Software Defined Network (SDN) learning switch using POX controller and Mininet. The switch should dynamically learn MAC addresses and install flow rules to optimize packet forwarding.
+## Project Overview
+This project implements a Traffic Classification System that:
+- Identifies TCP, UDP, and ICMP packets
+- Maintains per-protocol statistics
+- Displays real-time traffic distribution percentages
 
----
+## Files
+- `traffic_classifier.py` — POX SDN controller that classifies network traffic
+- `topology.py` — Mininet network topology with 1 switch and 4 hosts
 
-## 🔹 Objective
+## Requirements
+- Python 3
+- POX Controller
+- Mininet
+- OpenvSwitch
 
-* Understand SDN architecture
-* Implement MAC learning switch logic
-* Observe PacketIn and flow rule installation
-* Analyze network performance
+## Setup and Usage
 
----
-
-## 🔹 Topology
-
-* 2 Hosts (h1, h2)
-* 1 Switch (s1)
-* 1 Controller (POX)
-
----
-
-## 🔹 Setup Instructions
-
-### Step 1: Start POX Controller
-
+### Terminal 1 — Start POX Controller:
 ```bash
 cd ~/Desktop/pox
-./pox.py log.level --DEBUG forwarding.l2_learning info.packet_dump
+python3 pox.py forwarding.traffic_classifier
 ```
 
-### Step 2: Start Mininet
-
+### Terminal 2 — Start Mininet Topology:
 ```bash
-sudo mn --topo single,2 --controller remote --switch ovsk
+sudo python3 topology.py
 ```
 
-### Step 3: Test Connectivity
-
+### Generate Traffic (inside Mininet CLI):
 ```bash
-pingall
+# ICMP traffic
+h1 ping -c 5 10.0.0.2
+
+# TCP traffic
+h2 iperf -s &
+h1 iperf -c 10.0.0.2 -t 2
+
+# UDP traffic
+h2 iperf -s -u &
+h1 iperf -c 10.0.0.2 -u -t 2
 ```
-
----
-
-## 🔹 Expected Output
-
-* First packet triggers controller:
-
-  * PacketIn event (seen as packet_dump logs)
-  * Flooding occurs
-* Controller learns MAC addresses
-* Flow rules are installed:
-
-```
-installing flow for MAC → MAC
-```
-
-* Subsequent packets bypass controller
-
----
-
-## 🔹 Observations
-
-* Initial latency is higher due to controller involvement
-* After flow installation, latency reduces
-* Switch forwards packets directly
-
----
-
-## 🔹 Proof of Execution
-
-### ✔ Ping Results
-
-* 0% packet loss
-
-### ✔ Controller Logs
-
-* Packet dump logs visible
-* Flow installation messages observed
-
-### ✔ Flow Table (Optional Command)
-
-```bash
-sudo ovs-ofctl dump-flows s1
-```
-
----
-
-## 🔹 Conclusion
-
-The SDN learning switch successfully learns MAC addresses and installs flow rules, reducing controller dependency and improving efficiency.
-
----
-
-## 🔹 References
-
-* POX Documentation
-* Mininet Documentation
-* OpenFlow Specification
+## Network Topology
+- 1 OpenFlow Switch (s1)
+- 4 Hosts: h1 (10.0.0.1), h2 (10.0.0.2), h3 (10.0.0.3), h4 (10.0.0.4)
+- Remote Controller on 127.0.0.1:6633
